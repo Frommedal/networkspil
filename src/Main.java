@@ -135,7 +135,7 @@ public class Main extends Application {
 
 			opponent = new Player("Opponent", 14, 15, "up");
 			players.add(opponent);
-			fields[opponent.xpos][opponent.getYpos()].setGraphic(new ImageView(hero_up));
+			fields[14][15].setGraphic(new ImageView(hero_up));
 
 			scoreList.setText(getScoreList());
 
@@ -207,7 +207,7 @@ public class Main extends Application {
 		try {
 			ServerSocket serverSocket = new ServerSocket(6061);
 			Socket connectionSocket = serverSocket.accept();
-			Socket clientSocket = new Socket(participants[1], 6061);
+			Socket clientSocket = new Socket(participants[2], 6061);
 
 			ConnectionReceiver connectionReceiver = new ConnectionReceiver(connectionSocket, this);
 			ConnectionRequester connectionRequester = new ConnectionRequester(clientSocket, "Tomas, 9, 4, UP");
@@ -226,11 +226,10 @@ public class Main extends Application {
 				}
 			});
 
-			opponent.setName(opponentInfo[0]);
-			opponent.setXpos(opponentInfo[1]);
-			opponent.setYpos(opponentInfo[2]);
-			opponent.setDirection(opponentInfo[3]);
-			scoreList.setText(getScoreList());
+//			opponent.setName(opponentInfo[0]);
+//			opponent.setXpos(opponentInfo[1]);
+//			opponent.setYpos(opponentInfo[2]);
+//			opponent.setDirection(opponentInfo[3]);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
