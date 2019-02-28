@@ -73,6 +73,9 @@ public class Main extends Application {
 			DataOutputStream outputStream = new DataOutputStream(connectionSocket.getOutputStream());
 			outputStream.writeBytes("Orville, 9, 4, UP");
 
+			BufferedReader inputFromOpponent = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
+			System.out.println(inputFromOpponent.readLine());
+
 			//GUI setup
 			GridPane grid = new GridPane();
 			grid.setHgap(10);
