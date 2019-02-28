@@ -1,4 +1,6 @@
+import java.io.*;
 import java.net.ServerSocket;
+import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,6 +25,7 @@ public class Main extends Application {
 	public static Image hero_right,hero_left,hero_up,hero_down;
 
 	public static Player me;
+	public static Player opponent;
 	public static List<Player> players = new ArrayList<Player>();
 
 	public static String[] participants = {"10.24.4.31",};
@@ -64,7 +67,13 @@ public class Main extends Application {
 	@Override
 	public void start(Stage primaryStage) {
 		try {
-			ServerSocket serverSocket = new ServerSocket();
+			ServerSocket serverSocket = new ServerSocket(6061);
+			Socket connectionSocket = serverSocket.accept();
+
+			DataOutputStream outputStream = new DataOutputStream(connectionSocket.getOutputStream());
+			outputStream.writeBytes("Orville, 9, 4, UP");
+
+			//GUI setup
 			GridPane grid = new GridPane();
 			grid.setHgap(10);
 			grid.setVgap(10);
@@ -115,6 +124,8 @@ public class Main extends Application {
 			primaryStage.setScene(scene);
 			primaryStage.show();
 
+
+			//Player controls
 			scene.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
 				switch (event.getCode()) {
 				case UP:    playerMoved(0,-1,"up");    break;
@@ -132,8 +143,8 @@ public class Main extends Application {
 			players.add(me);
 			fields[9][4].setGraphic(new ImageView(hero_up));
 
-			Player harry = new Player("Harry",14,15,"up");
-			players.add(harry);
+			opponent = new Player("Harry",14,15,"up");
+			players.add(opponent);
 			fields[14][15].setGraphic(new ImageView(hero_up));
 
 			scoreList.setText(getScoreList());
