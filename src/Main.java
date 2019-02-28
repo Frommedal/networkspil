@@ -1,3 +1,4 @@
+import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,6 +24,8 @@ public class Main extends Application {
 
 	public static Player me;
 	public static List<Player> players = new ArrayList<Player>();
+
+	public static String[] participants = {"10.24.4.31",};
 
 	private Label[][] fields;
 	private TextArea scoreList;
@@ -61,6 +64,7 @@ public class Main extends Application {
 	@Override
 	public void start(Stage primaryStage) {
 		try {
+			ServerSocket serverSocket = new ServerSocket();
 			GridPane grid = new GridPane();
 			grid.setHgap(10);
 			grid.setVgap(10);
@@ -120,7 +124,8 @@ public class Main extends Application {
 				default: break;
 				}
 			});
-			
+
+
             // Setting up standard players
 			
 			me = new Player("Orville",9,4,"up");
@@ -138,6 +143,9 @@ public class Main extends Application {
 	}
 
 	public void playerMoved(int delta_x, int delta_y, String direction) {
+
+		//TODO: Distribueret concurrency
+
 		me.direction = direction;
 		int x = me.getXpos(),y = me.getYpos();
 
