@@ -3,6 +3,7 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.locks.Lock;
 
 import javafx.application.Application;
 import javafx.geometry.Insets;
@@ -26,7 +27,6 @@ public class Main extends Application {
 
 	public static Player me;
 	public static Player opponent;
-	public String[] opponentInfo;
 	public static List<Player> players = new ArrayList<Player>();
 
 	public static String[] participants = {"10.24.4.31", "10.24.67.234", "10.24.2.197"};
@@ -207,13 +207,8 @@ public class Main extends Application {
 		try {
 			ServerSocket serverSocket = new ServerSocket(6061);
 			Socket connectionSocket = serverSocket.accept();
-			Socket clientSocket = new Socket(participants[2], 6061);
-
 			ConnectionReceiver connectionReceiver = new ConnectionReceiver(connectionSocket, this);
-			ConnectionRequester connectionRequester = new ConnectionRequester(clientSocket, "Tomas, 9, 4, UP");
-
 			connectionReceiver.start();
-			connectionRequester.start();
 
 			//Player controls
 			scene.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
@@ -226,18 +221,15 @@ public class Main extends Application {
 				}
 			});
 
-//			opponent.setName(opponentInfo[0]);
-//			opponent.setXpos(opponentInfo[1]);
-//			opponent.setYpos(opponentInfo[2]);
-//			opponent.setDirection(opponentInfo[3]);
+
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 
 	}
 
-	public void setOpponentInfo(String[] opponentInfo) {
-		this.opponentInfo = opponentInfo;
+	public Player getOpponent() {
+		return opponent;
 	}
 
 	public static void main(String[] args) {

@@ -17,7 +17,14 @@ public class ConnectionReceiver extends Thread {
         super.run();
         try {
             BufferedReader reader = new BufferedReader(new InputStreamReader(listenTo.getInputStream()));
-            main.setOpponentInfo(reader.readLine().split(","));
+            String[] opponentInfo = reader.readLine().split(",");
+            Player opponent = main.getOpponent();
+
+            opponent.setName(opponentInfo[0]);
+            opponent.setXpos(Integer.parseInt(opponentInfo[1]));
+            opponent.setYpos(Integer.parseInt(opponentInfo[2]));
+            opponent.setDirection(opponentInfo[3]);
+
         } catch (IOException e) {
             e.printStackTrace();
         }
