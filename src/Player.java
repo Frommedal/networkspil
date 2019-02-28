@@ -37,4 +37,8 @@ public class Player {
 	public String toString() {
 		return name+":   "+point;
 	}
+
+	public void setName(String name) {
+		this.name = name;
+	}
 }

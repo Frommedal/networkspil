@@ -26,13 +26,16 @@ public class Main extends Application {
 
 	public static Player me;
 	public static Player opponent;
+	public String[] opponentInfo;
 	public static List<Player> players = new ArrayList<Player>();
 
-	public static String[] participants = {"10.24.4.31",};
+	public static String[] participants = {"10.24.4.31", "10.24.67.234", "10.24.2.197"};
 
 	private Label[][] fields;
 	private TextArea scoreList;
-	
+	private Button btnConnect;
+	private Scene scene;
+
 	private  String[] board = {    // 20x20
 			"wwwwwwwwwwwwwwwwwwww",
 			"w        ww        w",
@@ -67,16 +70,8 @@ public class Main extends Application {
 	@Override
 	public void start(Stage primaryStage) {
 		try {
-			ServerSocket serverSocket = new ServerSocket(6061);
-			Socket connectionSocket = serverSocket.accept();
-
-			DataOutputStream outputStream = new DataOutputStream(connectionSocket.getOutputStream());
-			outputStream.writeBytes("Orville, 9, 4, UP");
-
-			BufferedReader inputFromOpponent = new BufferedReader(new InputStreamReader(connectionSocket.getInputStream()));
-			System.out.println(inputFromOpponent.readLine());
-
 			//GUI setup
+			primaryStage.setTitle("Vores Spil");
 			GridPane grid = new GridPane();
 			grid.setHgap(10);
 			grid.setVgap(10);
@@ -123,34 +118,27 @@ public class Main extends Application {
 			grid.add(boardGrid,  0, 1);
 			grid.add(scoreList,  1, 1);
 						
-			Scene scene = new Scene(grid,scene_width,scene_height);
+
+			scene = new Scene(grid,scene_width,scene_height);
 			primaryStage.setScene(scene);
 			primaryStage.show();
 
-
-			//Player controls
-			scene.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
-				switch (event.getCode()) {
-				case UP:    playerMoved(0,-1,"up");    break;
-				case DOWN:  playerMoved(0,+1,"down");  break;
-				case LEFT:  playerMoved(-1,0,"left");  break;
-				case RIGHT: playerMoved(+1,0,"right"); break;
-				default: break;
-				}
-			});
-
+			btnConnect = new Button("Connect to Game!");
+			grid.add(btnConnect, 1, 2);
+			btnConnect.setOnAction(event -> this.connectAction());
 
             // Setting up standard players
 			
-			me = new Player("Orville",9,4,"up");
+			me = new Player("Tomas",9,4,"up");
 			players.add(me);
 			fields[9][4].setGraphic(new ImageView(hero_up));
 
-			opponent = new Player("Harry",14,15,"up");
+			opponent = new Player("Opponent", 14, 15, "up");
 			players.add(opponent);
-			fields[14][15].setGraphic(new ImageView(hero_up));
+			fields[opponent.xpos][opponent.getYpos()].setGraphic(new ImageView(hero_up));
 
 			scoreList.setText(getScoreList());
+
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
@@ -213,6 +201,44 @@ public class Main extends Application {
 			}
 		}
 		return null;
+	}
+
+	public void connectAction() {
+		try {
+			ServerSocket serverSocket = new ServerSocket(6061);
+			Socket connectionSocket = serverSocket.accept();
+			Socket clientSocket = new Socket(participants[1], 6061);
+
+			ConnectionReceiver connectionReceiver = new ConnectionReceiver(connectionSocket, this);
+			ConnectionRequester connectionRequester = new ConnectionRequester(clientSocket, "Tomas, 9, 4, UP");
+
+			connectionReceiver.start();
+			connectionRequester.start();
+
+			//Player controls
+			scene.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+				switch (event.getCode()) {
+					case UP:    playerMoved(0,-1,"up");    break;
+					case DOWN:  playerMoved(0,+1,"down");  break;
+					case LEFT:  playerMoved(-1,0,"left");  break;
+					case RIGHT: playerMoved(+1,0,"right"); break;
+					default: break;
+				}
+			});
+
+			opponent.setName(opponentInfo[0]);
+			opponent.setXpos(opponentInfo[1]);
+			opponent.setYpos(opponentInfo[2]);
+			opponent.setDirection(opponentInfo[3]);
+			scoreList.setText(getScoreList());
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
+	}
+
+	public void setOpponentInfo(String[] opponentInfo) {
+		this.opponentInfo = opponentInfo;
 	}
 
 	public static void main(String[] args) {
