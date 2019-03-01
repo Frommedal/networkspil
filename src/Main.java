@@ -3,9 +3,13 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.locks.Lock;
 
 import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.concurrent.Service;
+import javafx.concurrent.Task;
 import javafx.geometry.Insets;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
@@ -34,7 +38,7 @@ public class Main extends Application {
 	private Label[][] fields;
 	private TextArea scoreList;
 	private Button btnConnect;
-	private Scene scene;
+	private static Scene scene;
 
 	private  String[] board = {    // 20x20
 			"wwwwwwwwwwwwwwwwwwww",
@@ -123,10 +127,6 @@ public class Main extends Application {
 			primaryStage.setScene(scene);
 			primaryStage.show();
 
-			btnConnect = new Button("Connect to Game!");
-			grid.add(btnConnect, 1, 2);
-			btnConnect.setOnAction(event -> this.connectAction());
-
             // Setting up standard players
 			
 			me = new Player("Tomas",9,4,"up");
@@ -145,9 +145,6 @@ public class Main extends Application {
 	}
 
 	public void playerMoved(int delta_x, int delta_y, String direction) {
-
-		//TODO: Distribueret concurrency
-
 		me.direction = direction;
 		int x = me.getXpos(),y = me.getYpos();
 
@@ -203,28 +200,18 @@ public class Main extends Application {
 		return null;
 	}
 
-	public void connectAction() {
-		try {
-			ServerSocket serverSocket = new ServerSocket(6061);
-			Socket connectionSocket = serverSocket.accept();
-			ConnectionReceiver connectionReceiver = new ConnectionReceiver(connectionSocket, this);
-			connectionReceiver.start();
+	public void connectedAction() {
+		//Player controls
+		scene.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
+			switch (event.getCode()) {
+				case UP:    playerMoved(0,-1,"up");    break;
+				case DOWN:  playerMoved(0,+1,"down");  break;
+				case LEFT:  playerMoved(-1,0,"left");  break;
+				case RIGHT: playerMoved(+1,0,"right"); break;
+				default: break;
+			}
+		});
 
-			//Player controls
-			scene.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
-				switch (event.getCode()) {
-					case UP:    playerMoved(0,-1,"up");    break;
-					case DOWN:  playerMoved(0,+1,"down");  break;
-					case LEFT:  playerMoved(-1,0,"left");  break;
-					case RIGHT: playerMoved(+1,0,"right"); break;
-					default: break;
-				}
-			});
-
-
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 
 	}
 
@@ -233,7 +220,16 @@ public class Main extends Application {
 	}
 
 	public static void main(String[] args) {
-		launch(args);
+		try {
+			ServerSocket serverSocket = new ServerSocket(6061);
+			Socket connectionSocket = null;
+			ConnectionReceiver connectionReceiver = new ConnectionReceiver(connectionSocket, serverSocket);
+			connectionReceiver.start();
+			launch(args);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+
 	}
 }
 

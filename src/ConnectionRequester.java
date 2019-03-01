@@ -7,20 +7,26 @@ import java.net.Socket;
 public class ConnectionRequester extends Thread {
     private Socket sendTo;
     private String message;
+    private boolean running;
 
     public ConnectionRequester(Socket sendTo, String message) {
         this.sendTo = sendTo;
         this.message = message;
+        running = true;
     }
 
     @Override
     public void run() {
         super.run();
-        try {
-            DataOutputStream outputStream = new DataOutputStream(sendTo.getOutputStream());
-            outputStream.writeBytes(message + "\n");
-        } catch (IOException e) {
-            e.printStackTrace();
+        while (running) {
+            try {
+                DataOutputStream outputStream = new DataOutputStream(sendTo.getOutputStream());
+                outputStream.writeBytes(message + "\n");
+
+            } catch (IOException e) {
+                e.printStackTrace();
+                break;
+            }
         }
     }
 }
