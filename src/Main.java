@@ -1,15 +1,9 @@
 import java.io.*;
 import java.net.ServerSocket;
-import java.net.Socket;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.locks.Lock;
 
 import javafx.application.Application;
-import javafx.application.Platform;
-import javafx.concurrent.Service;
-import javafx.concurrent.Task;
 import javafx.geometry.Insets;
 import javafx.stage.Stage;
 import javafx.scene.Scene;
@@ -20,27 +14,26 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.text.*;
 
 public class Main extends Application {
+	private static final int size = 20;
+	private static final int scene_height = size * 20 + 100;
+	private static final int scene_width = size * 20 + 200;
 
-	public static final int size = 20; 
-	public static final int scene_height = size * 20 + 100;
-	public static final int scene_width = size * 20 + 200;
-
-	public static Image image_floor;
-	public static Image image_wall;
-	public static Image hero_right,hero_left,hero_up,hero_down;
+	private static Image image_floor;
+	private static Image hero_right,hero_left,hero_up,hero_down;
 
 	public static Player me;
 	public static Player opponent;
 	public static List<Player> players = new ArrayList<Player>();
 
-	public static String[] participants = {"10.24.4.31", "10.24.67.234", "10.24.2.197"};
+	private static String[] participants = {"10.24.4.31", "10.24.67.234", "10.24.2.197"};
 
-	private Label[][] fields;
-	private TextArea scoreList;
+	private static Label[][] fields;
+	private static TextArea scoreList;
 	private Button btnConnect;
 	private static Scene scene;
+	public static int CLOCK = 0;
 
-	private  String[] board = {    // 20x20
+	private static String[] board = {    // 20x20
 			"wwwwwwwwwwwwwwwwwwww",
 			"w        ww        w",
 			"w w  w  www w  w  ww",
@@ -91,7 +84,7 @@ public class Main extends Application {
 			
 			GridPane boardGrid = new GridPane();
 
-			image_wall  = new Image(getClass().getResourceAsStream("Image/wall4.png"),size,size,false,false);
+			Image image_wall = new Image(getClass().getResourceAsStream("Image/wall4.png"), size, size, false, false);
 			image_floor = new Image(getClass().getResourceAsStream("Image/floor1.png"),size,size,false,false);
 
 			hero_right  = new Image(getClass().getResourceAsStream("Image/heroRight.png"),size,size,false,false);
@@ -128,14 +121,11 @@ public class Main extends Application {
 			primaryStage.show();
 
             // Setting up standard players
-			
-			me = new Player("Tomas",9,4,"up");
-			players.add(me);
-			fields[9][4].setGraphic(new ImageView(hero_up));
 
-			opponent = new Player("Opponent", 14, 15, "up");
-			players.add(opponent);
-			fields[14][15].setGraphic(new ImageView(hero_up));
+
+			fields[me.getXpos()][me.getYpos()].setGraphic(new ImageView(hero_up));
+
+			fields[opponent.getXpos()][opponent.getYpos()].setGraphic(new ImageView(hero_up));
 
 			scoreList.setText(getScoreList());
 
@@ -144,20 +134,20 @@ public class Main extends Application {
 		}
 	}
 
-	public void playerMoved(int delta_x, int delta_y, String direction) {
-		me.direction = direction;
-		int x = me.getXpos(),y = me.getYpos();
+	public static void playerMoved(Player player, int delta_x, int delta_y, String direction) {
+		player.direction = direction;
+		int x = player.getXpos(),y = player.getYpos();
 
 		if (board[y+delta_y].charAt(x+delta_x)=='w') {
-			me.addPoints(-1);
+			player.addPoints(-1);
 		} 
 		else {
 			Player p = getPlayerAt(x+delta_x,y+delta_y);
 			if (p!=null) {
-              me.addPoints(10);
+              player.addPoints(10);
               p.addPoints(-10);
 			} else {
-				me.addPoints(1);
+				player.addPoints(1);
 			
 				fields[x][y].setGraphic(new ImageView(image_floor));
 				x+=delta_x;
@@ -176,14 +166,14 @@ public class Main extends Application {
 					fields[x][y].setGraphic(new ImageView(hero_down));
 				};
 
-				me.setXpos(x);
-				me.setYpos(y);
+				player.setXpos(x);
+				player.setYpos(y);
 			}
 		}
 		scoreList.setText(getScoreList());
 	}
 
-	public String getScoreList() {
+	public static String getScoreList() {
 		StringBuffer b = new StringBuffer(100);
 		for (Player p : players) {
 			b.append(p+"\r\n");
@@ -191,7 +181,7 @@ public class Main extends Application {
 		return b.toString();
 	}
 
-	public Player getPlayerAt(int x, int y) {
+	public static Player getPlayerAt(int x, int y) {
 		for (Player p : players) {
 			if (p.getXpos()==x && p.getYpos()==y) {
 				return p;
@@ -204,10 +194,10 @@ public class Main extends Application {
 		//Player controls
 		scene.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
 			switch (event.getCode()) {
-				case UP:    playerMoved(0,-1,"up");    break;
-				case DOWN:  playerMoved(0,+1,"down");  break;
-				case LEFT:  playerMoved(-1,0,"left");  break;
-				case RIGHT: playerMoved(+1,0,"right"); break;
+				case UP:    playerMoved(me, 0,-1,"up");    break;
+				case DOWN:  playerMoved(me, 0,+1,"down");  break;
+				case LEFT:  playerMoved(me, -1,0,"left");  break;
+				case RIGHT: playerMoved(me, +1,0,"right"); break;
 				default: break;
 			}
 		});
@@ -220,10 +210,14 @@ public class Main extends Application {
 	}
 
 	public static void main(String[] args) {
+		me = new Player("Tomas",9,4,"up");
+		players.add(me);
+		opponent = new Player("Opponent", 14, 15, "up");
+		players.add(opponent);
 		try {
-			ServerSocket serverSocket = new ServerSocket(6061);
-			Socket connectionSocket = null;
-			ConnectionReceiver connectionReceiver = new ConnectionReceiver(connectionSocket, serverSocket);
+			Receiver connectionReceiver = new Receiver(new ServerSocket(6061));
+			Requester connectionRequester = new Requester(participants[2]);
+			connectionRequester.start();
 			connectionReceiver.start();
 			launch(args);
 		} catch (IOException e) {
