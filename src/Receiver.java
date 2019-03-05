@@ -1,3 +1,5 @@
+import javafx.application.Platform;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -47,18 +49,26 @@ public class Receiver extends Thread {
                 listenTo = serverSocket.accept();
                 BufferedReader incoming = new BufferedReader(new InputStreamReader(listenTo.getInputStream()));
                 String received = incoming.readLine();
-                if (received.contains("MOVE")) {
-                    String[] seperated = received.split(" ");
-                    Main.playerMoved(Main.opponent,
-                            Integer.parseInt(seperated[1]) - Main.opponent.xpos,
-                            Integer.parseInt(seperated[2]) - Main.opponent.ypos,
-                            seperated[3]);
-                } else if (received.contains("POINT")) {
-                    String[] seperated = received.split(" ");
-                    if (received.contains(Main.me.name)) {
-                        Main.me.setPoint(Integer.parseInt(seperated[2]));
-                    } else if (received.contains(Main.opponent.name)) {
-                        Main.opponent.setPoint(Integer.parseInt(seperated[2]));
+                while (received != null) {
+                    incomingQueue.add(received);
+                    received = incoming.readLine();
+                }
+                while (incomingQueue.size() > 0) {
+                    if (incomingQueue.peek() != null && incomingQueue.peek().contains("MOVE")) {
+                        String removed = incomingQueue.remove();
+                        String[] seperated = removed.split(" ");
+                        Platform.runLater(() -> Main.playerMoved(Main.opponent,
+                                Integer.parseInt(seperated[1]) - Main.opponent.xpos,
+                                Integer.parseInt(seperated[2]) - Main.opponent.ypos,
+                                seperated[3]));
+                    } else if (incomingQueue.peek() != null && incomingQueue.peek().contains("POINT")) {
+                        String removed = incomingQueue.remove();
+                        String[] seperated = removed.split(" ");
+                        if (removed.contains(Main.me.name)) {
+                            Main.me.setPoint(Integer.parseInt(seperated[2]));
+                        } else if (removed.contains(Main.opponent.name)) {
+                            Main.opponent.setPoint(Integer.parseInt(seperated[2]));
+                        }
                     }
                 }
                 incoming.close();

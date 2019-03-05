@@ -222,13 +222,13 @@ public class Main extends Application {
 	}
 
 	public static void main(String[] args) {
-		me = new Player("Morten",14,15,"up");
+		me = new Player("Tomas",9,4,"up");
 		players.add(me);
-		opponent = new Player("Opponent", 9, 4, "up");
+		opponent = new Player("Opponent", 14, 15, "up");
 		players.add(opponent);
 		try {
 			connectionReceiver = new Receiver(new ServerSocket(6061));
-			connectionRequester = new Requester(participants[1]);
+			connectionRequester = new Requester(participants[0]);
 			connectionRequester.start();
 			connectionReceiver.start();
 			launch(args);
