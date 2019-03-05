@@ -25,10 +25,10 @@ public class Main extends Application {
 	public static Player opponent;
 	public static List<Player> players = new ArrayList<Player>();
 
-	private static String[] participants = {"10.24.4.31", "10.24.67.234", "10.24.2.197"};
+	private static String[] participants = {"10.24.4.92", "10.24.68.98", "10.24.2.197"};
 
 	private static Label[][] fields;
-	private static TextArea scoreList;
+	public static TextArea scoreList;
 	private Button btnConnect;
 	private static Scene scene;
 	public static int CLOCK = 0;
@@ -216,7 +216,7 @@ public class Main extends Application {
 		players.add(opponent);
 		try {
 			Receiver connectionReceiver = new Receiver(new ServerSocket(6061));
-			Requester connectionRequester = new Requester(participants[2]);
+			Requester connectionRequester = new Requester(participants[1]);
 			connectionRequester.start();
 			connectionReceiver.start();
 			launch(args);
