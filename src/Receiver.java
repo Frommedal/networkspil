@@ -3,17 +3,20 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.LinkedList;
+import java.util.Queue;
 
 public class Receiver extends Thread {
     private ServerSocket serverSocket;
     private LamportMessage message;
-    private Socket listenTo;
     private boolean running;
+    private Queue<String> incomingQueue;
 
 
     public Receiver(ServerSocket serverSocket) {
         running = true;
         this.serverSocket = serverSocket;
+        incomingQueue = new LinkedList<>();
     }
 
     @Override
@@ -21,7 +24,7 @@ public class Receiver extends Thread {
         super.run();
         try {
             System.out.println("Initiating connection...");
-            listenTo = serverSocket.accept();
+            Socket listenTo = serverSocket.accept();
             System.out.println("Connection established");
             BufferedReader reader = new BufferedReader(new InputStreamReader(listenTo.getInputStream()));
             String temporary = reader.readLine();
@@ -34,6 +37,7 @@ public class Receiver extends Thread {
                 Main.opponent.setDirection(opponentInfo[4]);
                 System.out.println("Connected with Player: " + Main.opponent.name);
                 Main.scoreList.setText(Main.getScoreList());
+                Main.connectedAction();
             }
             reader.close();
             listenTo.close();
@@ -44,10 +48,22 @@ public class Receiver extends Thread {
                 BufferedReader incoming = new BufferedReader(new InputStreamReader(listenTo.getInputStream()));
                 String received = incoming.readLine();
                 if (received.contains("MOVE")) {
-
+                    String[] seperated = received.split(" ");
+                    Main.playerMoved(Main.opponent,
+                            Integer.parseInt(seperated[1]) - Main.opponent.xpos,
+                            Integer.parseInt(seperated[2]) - Main.opponent.ypos,
+                            seperated[3]);
                 } else if (received.contains("POINT")) {
-
+                    String[] seperated = received.split(" ");
+                    if (received.contains(Main.me.name)) {
+                        Main.me.setPoint(Integer.parseInt(seperated[2]));
+                    } else if (received.contains(Main.opponent.name)) {
+                        Main.opponent.setPoint(Integer.parseInt(seperated[2]));
+                    }
                 }
+                incoming.close();
+                listenTo.close();
+                serverSocket.close();
             }
         } catch (IOException e) {
             e.printStackTrace();

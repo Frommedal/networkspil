@@ -1,12 +1,11 @@
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+import java.util.LinkedList;
+import java.util.Queue;
 
 public class Requester extends Thread {
-    private Socket sendTo;
-    private String message;
+    private Queue<String> outgoingQueue;
     private LamportMessage lamportMessage;
     private String playerIP;
     private boolean running;
@@ -14,13 +13,22 @@ public class Requester extends Thread {
     public Requester(String playerIP) {
         running = true;
         this.playerIP = playerIP;
+        outgoingQueue = new LinkedList<>();
+    }
+
+    public Queue<String> getOutgoingQueue() {
+        return outgoingQueue;
+    }
+
+    public void addMessageToOutgoingQueue(String message) {
+        outgoingQueue.add(message);
     }
 
     @Override
     public void run() {
         super.run();
         try {
-            sendTo = new Socket(playerIP, 6062);
+            Socket sendTo = new Socket(playerIP, 6062);
             System.out.println("Attempting to connect to: " + playerIP);
             DataOutputStream initialOutput = new DataOutputStream(sendTo.getOutputStream());
             initialOutput.writeBytes("NAME " + Main.me.name + " " + Main.me.getXpos() + " " + Main.me.getYpos() + " " + Main.me.getDirection());
@@ -30,8 +38,12 @@ public class Requester extends Thread {
                 try {
                     sendTo = new Socket(playerIP, 6063);
                     DataOutputStream outputStream = new DataOutputStream(sendTo.getOutputStream());
-                    outputStream.writeBytes(message + "\n");
+                    if (outgoingQueue.size() > 0) {
+                        outputStream.writeBytes(outgoingQueue.remove() + "\n");
+                    }
                     outputStream.flush();
+                    outputStream.close();
+                    sendTo.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                     break;

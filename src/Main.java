@@ -33,6 +33,9 @@ public class Main extends Application {
 	private static Scene scene;
 	public static int CLOCK = 0;
 
+	public static Receiver connectionReceiver;
+	public static Requester connectionRequester;
+
 	private static String[] board = {    // 20x20
 			"wwwwwwwwwwwwwwwwwwww",
 			"w        ww        w",
@@ -140,12 +143,17 @@ public class Main extends Application {
 
 		if (board[y+delta_y].charAt(x+delta_x)=='w') {
 			player.addPoints(-1);
+			connectionRequester.addMessageToOutgoingQueue("POINT " + player.name + " " + (player.point - 1));
 		} 
 		else {
 			Player p = getPlayerAt(x+delta_x,y+delta_y);
 			if (p!=null) {
               player.addPoints(10);
               p.addPoints(-10);
+              if (player.equals(me)) {
+				  connectionRequester.addMessageToOutgoingQueue("POINT " + player.name + " " + (player.point + 10));
+				  connectionRequester.addMessageToOutgoingQueue("POINT " + p.name + " " + (p.point - 10));
+			  }
 			} else {
 				player.addPoints(1);
 			
@@ -168,6 +176,10 @@ public class Main extends Application {
 
 				player.setXpos(x);
 				player.setYpos(y);
+				if (player.equals(me)) {
+					connectionRequester.addMessageToOutgoingQueue("MOVE " + player.getXpos() + " " + player.getYpos() + " " + player.getDirection());
+					connectionRequester.addMessageToOutgoingQueue("POINT " + player.name + " " + player.point);
+				}
 			}
 		}
 		scoreList.setText(getScoreList());
@@ -190,7 +202,7 @@ public class Main extends Application {
 		return null;
 	}
 
-	public void connectedAction() {
+	public static void connectedAction() {
 		//Player controls
 		scene.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
 			switch (event.getCode()) {
@@ -215,8 +227,8 @@ public class Main extends Application {
 		opponent = new Player("Opponent", 14, 15, "up");
 		players.add(opponent);
 		try {
-			Receiver connectionReceiver = new Receiver(new ServerSocket(6061));
-			Requester connectionRequester = new Requester(participants[1]);
+			connectionReceiver = new Receiver(new ServerSocket(6061));
+			connectionRequester = new Requester(participants[1]);
 			connectionRequester.start();
 			connectionReceiver.start();
 			launch(args);
