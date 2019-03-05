@@ -20,7 +20,7 @@ public class Requester extends Thread {
     public void run() {
         super.run();
         try {
-            sendTo = new Socket(playerIP, 6062);
+            sendTo = new Socket(playerIP, 6061);
             System.out.println("Attempting to connect to: " + playerIP);
             DataOutputStream initialOutput = new DataOutputStream(sendTo.getOutputStream());
             initialOutput.writeBytes("NAME " + Main.me.name + " " + Main.me.getXpos() + " " + Main.me.getYpos() + " " + Main.me.getDirection());
@@ -28,10 +28,12 @@ public class Requester extends Thread {
             sendTo.close();
             while (running) {
                 try {
-                    sendTo = new Socket(playerIP, 6063);
+                    sendTo = new Socket(playerIP, 6064);
                     DataOutputStream outputStream = new DataOutputStream(sendTo.getOutputStream());
                     outputStream.writeBytes(message + "\n");
                     outputStream.flush();
+                    outputStream.close();
+                    sendTo.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                     break;

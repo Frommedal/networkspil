@@ -34,12 +34,13 @@ public class Receiver extends Thread {
                 Main.opponent.setDirection(opponentInfo[4]);
                 System.out.println("Connected with Player: " + Main.opponent.name);
                 Main.scoreList.setText(Main.getScoreList());
+                Main.connectedAction();
             }
             reader.close();
             listenTo.close();
             serverSocket.close();
             while (running) {
-                serverSocket = new ServerSocket(6064);
+                serverSocket = new ServerSocket(6063);
                 listenTo = serverSocket.accept();
                 BufferedReader incoming = new BufferedReader(new InputStreamReader(listenTo.getInputStream()));
                 String received = incoming.readLine();
@@ -48,6 +49,9 @@ public class Receiver extends Thread {
                 } else if (received.contains("POINT")) {
 
                 }
+                incoming.close();
+                listenTo.close();
+                serverSocket.close();
             }
         } catch (IOException e) {
             e.printStackTrace();
