@@ -25,7 +25,7 @@ public class Main extends Application {
 	public static Player opponent;
 	public static List<Player> players = new ArrayList<Player>();
 
-	private static String[] participants = {"10.24.4.92", "10.24.68.98", "10.24.2.197"};
+	private static String[] participants = {"10.24.68.98", "10.24.4.92", "10.24.2.197"};
 
 	private static Label[][] fields;
 	public static TextArea scoreList;
@@ -222,9 +222,9 @@ public class Main extends Application {
 	}
 
 	public static void main(String[] args) {
-		me = new Player("Tomas",9,4,"up");
+		me = new Player("Morten",14,15,"up");
 		players.add(me);
-		opponent = new Player("Opponent", 14, 15, "up");
+		opponent = new Player("Opponent", 9, 4, "up");
 		players.add(opponent);
 		try {
 			connectionReceiver = new Receiver(new ServerSocket(6061));

@@ -43,7 +43,7 @@ public class Receiver extends Thread {
             listenTo.close();
             serverSocket.close();
             while (running) {
-                serverSocket = new ServerSocket(6064);
+                serverSocket = new ServerSocket(6063);
                 listenTo = serverSocket.accept();
                 BufferedReader incoming = new BufferedReader(new InputStreamReader(listenTo.getInputStream()));
                 String received = incoming.readLine();

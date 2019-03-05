@@ -36,7 +36,7 @@ public class Requester extends Thread {
             sendTo.close();
             while (running) {
                 try {
-                    sendTo = new Socket(playerIP, 6063);
+                    sendTo = new Socket(playerIP, 6064);
                     DataOutputStream outputStream = new DataOutputStream(sendTo.getOutputStream());
                     if (outgoingQueue.size() > 0) {
                         outputStream.writeBytes(outgoingQueue.remove() + "\n");
