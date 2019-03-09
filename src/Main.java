@@ -21,19 +21,17 @@ public class Main extends Application {
 	private static Image image_floor;
 	private static Image hero_right,hero_left,hero_up,hero_down;
 
-	public static Player me;
-	public static Player opponent;
-	public static List<Player> players = new ArrayList<Player>();
+	static Player me;
+	static Player opponent;
+	private static List<Player> players = new ArrayList<>();
 
 	private static String[] participants = {"10.24.68.98", "10.24.4.92", "10.24.2.197"};
 
 	private static Label[][] fields;
-	public static TextArea scoreList;
+	static TextArea scoreList;
 	private static Scene scene;
-	public static int CLOCK = 0;
 
-	public static Receiver connectionReceiver;
-	public static Requester connectionRequester;
+	private static Requester connectionRequester;
 
 	private static String[] board = {    // 20x20
 			"wwwwwwwwwwwwwwwwwwww",
@@ -136,7 +134,7 @@ public class Main extends Application {
 		}
 	}
 
-	public static void playerMoved(Player player, int delta_x, int delta_y, String direction) {
+	static void playerMoved(Player player, int delta_x, int delta_y, String direction) {
 		player.direction = direction;
 		int x = player.getXpos(),y = player.getYpos();
 
@@ -162,16 +160,16 @@ public class Main extends Application {
 
 				if (direction.equals("right")) {
 					fields[x][y].setGraphic(new ImageView(hero_right));
-				};
+				}
 				if (direction.equals("left")) {
 					fields[x][y].setGraphic(new ImageView(hero_left));
-				};
+				}
 				if (direction.equals("up")) {
 					fields[x][y].setGraphic(new ImageView(hero_up));
-				};
+				}
 				if (direction.equals("down")) {
 					fields[x][y].setGraphic(new ImageView(hero_down));
-				};
+				}
 
 				player.setXpos(x);
 				player.setYpos(y);
@@ -184,15 +182,15 @@ public class Main extends Application {
 		scoreList.setText(getScoreList());
 	}
 
-	public static String getScoreList() {
-		StringBuffer b = new StringBuffer(100);
+	static String getScoreList() {
+		StringBuilder b = new StringBuilder(100);
 		for (Player p : players) {
-			b.append(p+"\r\n");
+			b.append(p).append("\r\n");
 		}
 		return b.toString();
 	}
 
-	public static Player getPlayerAt(int x, int y) {
+	private static Player getPlayerAt(int x, int y) {
 		for (Player p : players) {
 			if (p.getXpos()==x && p.getYpos()==y) {
 				return p;
@@ -201,7 +199,7 @@ public class Main extends Application {
 		return null;
 	}
 
-	public static void connectedAction() {
+	static void connectedAction() {
 		//Player controls
 		scene.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
 			switch (event.getCode()) {
@@ -216,17 +214,13 @@ public class Main extends Application {
 
 	}
 
-	public Player getOpponent() {
-		return opponent;
-	}
-
 	public static void main(String[] args) {
 		me = new Player("Tomas",9,4,"up");
 		players.add(me);
 		opponent = new Player("Opponent", 14, 15, "up");
 		players.add(opponent);
 		try {
-			connectionReceiver = new Receiver(new ServerSocket(6061));
+			Receiver connectionReceiver = new Receiver(new ServerSocket(6061));
 			connectionRequester = new Requester(participants[0]);
 			connectionRequester.start();
 			connectionReceiver.start();

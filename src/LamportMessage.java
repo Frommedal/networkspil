@@ -3,7 +3,7 @@ public class LamportMessage {
     private int tStamp;
     private int id;
 
-    public LamportMessage(String message, int tStamp, int id) {
+    LamportMessage(String message, int tStamp, int id) {
         this.message = message;
         this.tStamp = tStamp;
         this.id = id;

@@ -5,7 +5,7 @@ public class Player {
 	int point;
 	String direction;
 
-	public Player(String name, int xpos, int ypos, String direction) {
+	Player(String name, int xpos, int ypos, String direction) {
 		this.name = name;
 		this.xpos = xpos;
 		this.ypos = ypos;
@@ -13,33 +13,33 @@ public class Player {
 		this.point = 0;
 	}
 
-	public int getXpos() {
+	int getXpos() {
 		return xpos;
 	}
-	public void setXpos(int xpos) {
+	void setXpos(int xpos) {
 		this.xpos = xpos;
 	}
-	public int getYpos() {
+	int getYpos() {
 		return ypos;
 	}
-	public void setYpos(int ypos) {
+	void setYpos(int ypos) {
 		this.ypos = ypos;
 	}
-	public String getDirection() {
+	String getDirection() {
 		return direction;
 	}
-	public void setDirection(String direction) {
+	void setDirection(String direction) {
 		this.direction = direction;
 	}
-	public void addPoints(int p) {
+	void addPoints(int p) {
 		point+=p;
 	}
-	public void setPoint(int p) {point = p;};
+	void setPoint(int p) {point = p;}
 	public String toString() {
 		return name+":   "+point;
 	}
 
-	public void setName(String name) {
+	void setName(String name) {
 		this.name = name;
 	}
 }

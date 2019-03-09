@@ -6,21 +6,16 @@ import java.util.Queue;
 
 public class Requester extends Thread {
     private Queue<String> outgoingQueue;
-    private LamportMessage lamportMessage;
     private String playerIP;
     private boolean running;
 
-    public Requester(String playerIP) {
+    Requester(String playerIP) {
         running = true;
         this.playerIP = playerIP;
         outgoingQueue = new LinkedList<>();
     }
 
-    public Queue<String> getOutgoingQueue() {
-        return outgoingQueue;
-    }
-
-    public void addMessageToOutgoingQueue(String message) {
+    void addMessageToOutgoingQueue(String message) {
         outgoingQueue.add(message);
     }
 
@@ -30,20 +25,14 @@ public class Requester extends Thread {
         try {
             Socket sendTo = new Socket(playerIP, 6062);
             System.out.println("Attempting to connect to: " + playerIP);
-            DataOutputStream initialOutput = new DataOutputStream(sendTo.getOutputStream());
-            initialOutput.writeBytes("NAME " + Main.me.name + " " + Main.me.getXpos() + " " + Main.me.getYpos() + " " + Main.me.getDirection());
-            initialOutput.close();
-            sendTo.close();
+            DataOutputStream outputStream = new DataOutputStream(sendTo.getOutputStream());
+            outputStream.writeBytes("NAME " + Main.me.name + " " + Main.me.getXpos() + " " + Main.me.getYpos() + " " + Main.me.getDirection());
             while (running) {
                 try {
-                    sendTo = new Socket(playerIP, 6064);
-                    DataOutputStream outputStream = new DataOutputStream(sendTo.getOutputStream());
                     while (outgoingQueue.size() > 0) {
                         outputStream.writeBytes(outgoingQueue.remove() + "\n");
                     }
                     outputStream.flush();
-                    outputStream.close();
-                    sendTo.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                     break;
@@ -54,7 +43,4 @@ public class Requester extends Thread {
         }
     }
 
-    public synchronized void increamentCLOCK() {
-        Main.CLOCK++;
-    }
 }

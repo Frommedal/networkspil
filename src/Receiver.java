@@ -10,12 +10,11 @@ import java.util.Queue;
 
 public class Receiver extends Thread {
     private ServerSocket serverSocket;
-    private LamportMessage message;
     private boolean running;
     private Queue<String> incomingQueue;
 
 
-    public Receiver(ServerSocket serverSocket) {
+    Receiver(ServerSocket serverSocket) {
         running = true;
         this.serverSocket = serverSocket;
         incomingQueue = new LinkedList<>();
@@ -42,11 +41,7 @@ public class Receiver extends Thread {
                 Main.connectedAction();
             }
             reader.close();
-            listenTo.close();
-            serverSocket.close();
             while (running) {
-                serverSocket = new ServerSocket(6063);
-                listenTo = serverSocket.accept();
                 BufferedReader incoming = new BufferedReader(new InputStreamReader(listenTo.getInputStream()));
                 String received = incoming.readLine();
                 while (received != null) {
@@ -72,15 +67,9 @@ public class Receiver extends Thread {
                     }
                 }
                 incoming.close();
-                listenTo.close();
-                serverSocket.close();
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-    }
-
-    private synchronized void setCLOCK() {
-        Main.CLOCK = 1 + Math.max(Main.CLOCK, message.gettStamp());
     }
 }
