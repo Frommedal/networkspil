@@ -29,7 +29,6 @@ public class Main extends Application {
 
 	private static Label[][] fields;
 	public static TextArea scoreList;
-	private Button btnConnect;
 	private static Scene scene;
 	public static int CLOCK = 0;
 
