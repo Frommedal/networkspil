@@ -1,3 +1,5 @@
+//Ricart-Agrawala Original Paper with pseudo code: http://www.cs.ucf.edu/~eurip/papers/Ricart-Agrawala.pdf
+
 public class LamportMessage {
     private String message;
     private int tStamp;

@@ -2,6 +2,7 @@ import java.io.*;
 import java.net.ServerSocket;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Semaphore;
 
 import javafx.application.Application;
 import javafx.geometry.Insets;
@@ -14,25 +15,39 @@ import javafx.scene.layout.GridPane;
 import javafx.scene.text.*;
 
 public class Main extends Application {
+	//GUI dimensions
 	private static final int size = 20;
 	private static final int scene_height = size * 20 + 100;
 	private static final int scene_width = size * 20 + 200;
-
-	private static Image image_floor;
-	private static Image hero_right,hero_left,hero_up,hero_down;
-
-	static Player me;
-	static Player opponent;
-	private static List<Player> players = new ArrayList<>();
-
-	private static String[] participants = {"10.24.68.98", "10.24.4.92", "10.24.2.197"};
-
 	private static Label[][] fields;
 	static TextArea scoreList;
 	private static Scene scene;
 
+	//Media references
+	private static Image image_floor;
+	private static Image hero_right,hero_left,hero_up,hero_down;
+
+	//Player variables
+	static Player me;
+	static Player opponent;
+	private static List<Player> players = new ArrayList<>();
+	private static String[] participants = {"10.24.68.98", "10.24.4.92", "10.24.2.197"};
+
+	//Threads
 	private static Requester connectionRequester;
 
+	//Variables for ME, Ricart-Agrawala
+	//Constant
+	public static final int My_Unique_Number = 0;
+	//Integers
+	public static int Our_Sequence_Number = 0;
+	public static int Outstanding_Reply_Count;
+	//Booleans
+	public static boolean Requesting_Critical_Section = false;
+	public static boolean[] Reply_Deferred = new boolean[2];
+
+
+	//Board for gameplay initiation
 	private static String[] board = {    // 20x20
 			"wwwwwwwwwwwwwwwwwwww",
 			"w        ww        w",
@@ -135,6 +150,25 @@ public class Main extends Application {
 	}
 
 	static void playerMoved(Player player, int delta_x, int delta_y, String direction) {
+		if (player.equals(me)) {
+			try {
+				Semaphore Shared_vars = new Semaphore(1);
+				Shared_vars.acquire();
+				//Sets the state & increaments the clock
+				Requesting_Critical_Section = true;
+				Our_Sequence_Number += 1;
+				Shared_vars.release();
+				Outstanding_Reply_Count = 1;
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			//Sends a REQUEST message to opponent
+			connectionRequester.addMessageToOutgoingQueue("REQUEST " + Our_Sequence_Number + " " + My_Unique_Number);
+
+			while (Outstanding_Reply_Count > 0);
+		}
+
+		//Critical Section
 		player.direction = direction;
 		int x = player.getXpos(),y = player.getYpos();
 
@@ -180,6 +214,15 @@ public class Main extends Application {
 			}
 		}
 		scoreList.setText(getScoreList());
+		//Critical Section
+		if (player.equals(me)) {
+			Requesting_Critical_Section = false;
+			if (Reply_Deferred[1]) {
+				Reply_Deferred[1] = false;
+				//Sends a REPLY message, if opponent is requesting access to the critical section
+				connectionRequester.addMessageToOutgoingQueue("REPLY 1");
+			}
+		}
 	}
 
 	static String getScoreList() {
@@ -220,8 +263,8 @@ public class Main extends Application {
 		opponent = new Player("Opponent", 14, 15, "up");
 		players.add(opponent);
 		try {
-			Receiver connectionReceiver = new Receiver(new ServerSocket(6061));
 			connectionRequester = new Requester(participants[0]);
+			Receiver connectionReceiver = new Receiver(new ServerSocket(6061), connectionRequester);
 			connectionRequester.start();
 			connectionReceiver.start();
 			launch(args);
