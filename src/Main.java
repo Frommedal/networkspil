@@ -20,8 +20,9 @@ public class Main extends Application {
 	private static final int scene_height = size * 20 + 100;
 	private static final int scene_width = size * 20 + 200;
 	private static Label[][] fields;
-	static TextArea scoreList;
-	private static Scene scene;
+	static TextArea scoreList = new TextArea();
+	private static GridPane grid = new GridPane();
+	private static Scene scene = new Scene(grid,scene_width,scene_height);;
 
 	//Media references
 	private static Image image_floor;
@@ -84,7 +85,6 @@ public class Main extends Application {
 		try {
 			//GUI setup
 			primaryStage.setTitle("Vores Spil");
-			GridPane grid = new GridPane();
 			grid.setHgap(10);
 			grid.setVgap(10);
 			grid.setPadding(new Insets(0, 10, 0, 10));
@@ -94,8 +94,6 @@ public class Main extends Application {
 	
 			Text scoreLabel = new Text("Score:");
 			scoreLabel.setFont(Font.font("Arial", FontWeight.BOLD, 20));
-
-			scoreList = new TextArea();
 			
 			GridPane boardGrid = new GridPane();
 
@@ -131,7 +129,6 @@ public class Main extends Application {
 			grid.add(scoreList,  1, 1);
 						
 
-			scene = new Scene(grid,scene_width,scene_height);
 			primaryStage.setScene(scene);
 			primaryStage.show();
 
@@ -150,6 +147,7 @@ public class Main extends Application {
 	}
 
 	static void playerMoved(Player player, int delta_x, int delta_y, String direction) {
+		System.out.println(player.toString() + " " + delta_x + " " + delta_y + " " + direction);
 		if (player.equals(me)) {
 			try {
 				Semaphore Shared_vars = new Semaphore(1);
@@ -244,6 +242,7 @@ public class Main extends Application {
 
 	static void connectedAction() {
 		//Player controls
+		System.out.println("Keys enabled");
 		scene.addEventFilter(KeyEvent.KEY_PRESSED, event -> {
 			switch (event.getCode()) {
 				case UP:    playerMoved(me, 0,-1,"up");    break;

@@ -29,14 +29,16 @@ public class Requester extends Thread {
             initialOutput.writeBytes("NAME " + Main.me.name + " " + Main.me.getXpos() + " " + Main.me.getYpos() + " " + Main.me.getDirection());
             initialOutput.close();
             sendTo.close();
-            sendTo = new Socket(playerIP, 6064);
-            DataOutputStream outputStream = new DataOutputStream(sendTo.getOutputStream());
             while (running) {
                 try {
+                    sendTo = new Socket(playerIP, 6064);
+                    DataOutputStream outputStream = new DataOutputStream(sendTo.getOutputStream());
                     while (outgoingQueue.size() > 0) {
                         outputStream.writeBytes(outgoingQueue.remove() + "\n");
                     }
                     outputStream.flush();
+                    outputStream.close();
+                    sendTo.close();
                 } catch (IOException e) {
                     e.printStackTrace();
                     break;
