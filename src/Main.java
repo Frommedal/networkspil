@@ -153,17 +153,17 @@ public class Main extends Application {
 				Semaphore Shared_vars = new Semaphore(1);
 				Shared_vars.acquire();
 				//Sets the state & increaments the clock
-				Requesting_Critical_Section = true;
-				Our_Sequence_Number += 1;
+				setRequesting_Critical_Section(true);
+				increamentOur_Sequence_Number();
 				Shared_vars.release();
-				Outstanding_Reply_Count = 1;
+				setOutstanding_Reply_Count(1);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 			//Sends a REQUEST message to opponent
-			connectionRequester.addMessageToOutgoingQueue("REQUEST " + Our_Sequence_Number + " " + My_Unique_Number);
+			connectionRequester.addMessageToOutgoingQueue("REQUEST " + getOur_Sequence_Number() + " " + getMy_Unique_Number());
 
-			while (Outstanding_Reply_Count > 0);
+			while (getOutstanding_Reply_Count() > 0);
 		}
 
 		//Critical Section
@@ -214,9 +214,9 @@ public class Main extends Application {
 		scoreList.setText(getScoreList());
 		//Critical Section
 		if (player.equals(me)) {
-			Requesting_Critical_Section = false;
-			if (Reply_Deferred[1]) {
-				Reply_Deferred[1] = false;
+			setRequesting_Critical_Section(false);
+			if (getReply_Deferred()[1]) {
+				getReply_Deferred()[1] = false;
 				//Sends a REPLY message, if opponent is requesting access to the critical section
 				connectionRequester.addMessageToOutgoingQueue("REPLY 1");
 			}
@@ -271,6 +271,47 @@ public class Main extends Application {
 			e.printStackTrace();
 		}
 
+	}
+
+	public static synchronized void decreamentOutstanding_Reply_Count() {
+		Outstanding_Reply_Count--;
+	}
+
+	public static synchronized int getOur_Sequence_Number() {
+		return Our_Sequence_Number;
+	}
+
+	public static synchronized void setOur_Sequence_Number(int our_Sequence_Number) {
+		Our_Sequence_Number = our_Sequence_Number;
+		System.out.println(Our_Sequence_Number);
+	}
+
+	public static synchronized boolean isRequesting_Critical_Section() {
+		return Requesting_Critical_Section;
+	}
+
+	public static synchronized int getMy_Unique_Number() {
+		return My_Unique_Number;
+	}
+
+	public static synchronized boolean[] getReply_Deferred() {
+		return Reply_Deferred;
+	}
+
+	public static synchronized void increamentOur_Sequence_Number() {
+		Our_Sequence_Number++;
+	}
+
+	public static synchronized void setRequesting_Critical_Section(boolean requesting_Critical_Section) {
+		Requesting_Critical_Section = requesting_Critical_Section;
+	}
+
+	public static synchronized void setOutstanding_Reply_Count(int outstanding_Reply_Count) {
+		Outstanding_Reply_Count = outstanding_Reply_Count;
+	}
+
+	public static synchronized int getOutstanding_Reply_Count() {
+		return Outstanding_Reply_Count;
 	}
 }
 

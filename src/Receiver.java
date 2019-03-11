@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.LinkedList;
+import java.util.Objects;
 import java.util.Queue;
 import java.util.concurrent.Semaphore;
 
@@ -51,11 +52,11 @@ public class Receiver extends Thread {
                 listenTo = serverSocket.accept();
                 BufferedReader incoming = new BufferedReader(new InputStreamReader(listenTo.getInputStream()));
                 String received = incoming.readLine();
-                while (received != null) {
+                if (received != null || Objects.equals(received, "null")) {
                     incomingQueue.add(received);
-                    received = incoming.readLine();
                 }
-                while (incomingQueue.size() > 0) {
+                if (incomingQueue.size() > 0) {
+                    System.out.println("received: " + incomingQueue.peek());
                     if (incomingQueue.peek() != null && incomingQueue.peek().contains("MOVE")) {
                         String removed = incomingQueue.remove();
                         String[] seperated = removed.split(" ");
@@ -77,17 +78,17 @@ public class Receiver extends Thread {
                             String[] seperated = removed.split(" ");
                             int k = Integer.parseInt(seperated[1]);
                             int j = Integer.parseInt(seperated[2]);
-                            Main.Our_Sequence_Number = Math.max(Main.Our_Sequence_Number, k);
+                            Main.setOur_Sequence_Number(Math.max(Main.getOur_Sequence_Number(), k));
                             Semaphore Shared_Variables = new Semaphore(1);
                             Shared_Variables.acquire();
-                            boolean Defer_it = Main.Requesting_Critical_Section
+                            boolean Defer_it = Main.isRequesting_Critical_Section()
                                     && (
-                                        (k > Main.Our_Sequence_Number)
-                                                || (k == Main.Our_Sequence_Number && j > Main.My_Unique_Number)
+                                        (k > Main.getOur_Sequence_Number())
+                                                || (k == Main.getOur_Sequence_Number() && j > Main.getMy_Unique_Number())
                             );
                             Shared_Variables.release();
                             if (Defer_it) {
-                                Main.Reply_Deferred[j] = true;
+                                Main.getReply_Deferred()[j] = true;
                             } else {
                                 requester.addMessageToOutgoingQueue("REPLY " + j);
                             }
@@ -95,7 +96,8 @@ public class Receiver extends Thread {
                             e.printStackTrace();
                         }
                     } else if (incomingQueue.peek() != null && incomingQueue.peek().contains("REPLY")) {
-                        Main.Outstanding_Reply_Count -= 1;
+                        Main.decreamentOutstanding_Reply_Count();
+                        incomingQueue.remove();
                     }
                 }
                 incoming.close();
