@@ -32,7 +32,7 @@ public class Main extends Application {
 	static Player me;
 	static Player opponent;
 	private static List<Player> players = new ArrayList<>();
-	private static String[] participants = {"10.24.68.98", "10.24.4.92", "10.24.2.197"};
+	private static String participant = "192.168.43.183";
 
 	//Threads
 	private static Requester connectionRequester;
@@ -262,7 +262,7 @@ public class Main extends Application {
 		opponent = new Player("Opponent", 14, 15, "up");
 		players.add(opponent);
 		try {
-			connectionRequester = new Requester(participants[0]);
+			connectionRequester = new Requester(participant);
 			Receiver connectionReceiver = new Receiver(new ServerSocket(6061), connectionRequester);
 			connectionRequester.start();
 			connectionReceiver.start();
