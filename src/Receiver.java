@@ -44,8 +44,12 @@ public class Receiver extends Thread {
                 Main.connectedAction();
             }
             reader.close();
+            listenTo.close();
+            serverSocket.close();
+            serverSocket = new ServerSocket(6063);
+            listenTo = serverSocket.accept();
+            BufferedReader incoming = new BufferedReader(new InputStreamReader(listenTo.getInputStream()));
             while (running) {
-                BufferedReader incoming = new BufferedReader(new InputStreamReader(listenTo.getInputStream()));
                 String received = incoming.readLine();
                 while (received != null) {
                     incomingQueue.add(received);
@@ -94,7 +98,6 @@ public class Receiver extends Thread {
                         Main.Outstanding_Reply_Count -= 1;
                     }
                 }
-                incoming.close();
             }
         } catch (IOException e) {
             e.printStackTrace();

@@ -25,8 +25,12 @@ public class Requester extends Thread {
         try {
             Socket sendTo = new Socket(playerIP, 6062);
             System.out.println("Attempting to connect to: " + playerIP);
+            DataOutputStream initialOutput = new DataOutputStream(sendTo.getOutputStream());
+            initialOutput.writeBytes("NAME " + Main.me.name + " " + Main.me.getXpos() + " " + Main.me.getYpos() + " " + Main.me.getDirection());
+            initialOutput.close();
+            sendTo.close();
+            sendTo = new Socket(playerIP, 6064);
             DataOutputStream outputStream = new DataOutputStream(sendTo.getOutputStream());
-            outputStream.writeBytes("NAME " + Main.me.name + " " + Main.me.getXpos() + " " + Main.me.getYpos() + " " + Main.me.getDirection());
             while (running) {
                 try {
                     while (outgoingQueue.size() > 0) {
